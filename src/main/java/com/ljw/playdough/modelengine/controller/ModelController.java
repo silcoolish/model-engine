@@ -8,11 +8,15 @@ import com.ljw.playdough.modelengine.entity.SysModel;
 import com.ljw.playdough.modelengine.entity.SysModelField;
 import com.ljw.playdough.modelengine.service.ModelEngineService;
 import com.ljw.playdough.modelengine.service.SysModelService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "模型管理", description = "数据模型的创建、查询、Schema 变更及生命周期管理")
 @RestController
 @RequestMapping("/api/models")
 public class ModelController {
@@ -26,6 +30,7 @@ public class ModelController {
         this.sysModelService = sysModelService;
     }
 
+    @Operation(summary = "创建模型", description = "创建模型元数据并在数据库中生成对应的物理表")
     @PostMapping
     public Result<Long> createModel(@RequestBody @Valid ModelCreateRequest request) {
         SysModel model = new SysModel();
@@ -42,16 +47,21 @@ public class ModelController {
         return Result.success(model.getId());
     }
 
+    @Operation(summary = "查询所有模型", description = "返回系统中所有模型的元数据列表")
     @GetMapping
     public Result<List<SysModel>> listModels() {
         return Result.success(sysModelService.list());
     }
 
+    @Operation(summary = "查询单个模型", description = "根据模型 ID 返回模型详情")
+    @Parameter(name = "id", description = "模型 ID", required = true)
     @GetMapping("/{id}")
     public Result<SysModel> getModel(@PathVariable Long id) {
         return Result.success(sysModelService.getById(id));
     }
 
+    @Operation(summary = "更新模型 Schema", description = "替换模型的字段定义并执行 ALTER TABLE 同步物理表结构（仅 DRAFT 状态可操作）")
+    @Parameter(name = "id", description = "模型 ID", required = true)
     @PutMapping("/{id}/schema")
     public Result<Void> updateSchema(@PathVariable Long id,
                                      @RequestBody @Valid ModelUpdateSchemaRequest request) {
@@ -62,24 +72,32 @@ public class ModelController {
         return Result.success();
     }
 
+    @Operation(summary = "发布模型", description = "将模型状态从 DRAFT 推进到 PUBLISHED")
+    @Parameter(name = "id", description = "模型 ID", required = true)
     @PostMapping("/{id}/publish")
     public Result<Void> publishModel(@PathVariable Long id) {
         modelEngineService.publishModel(id);
         return Result.success();
     }
 
+    @Operation(summary = "下线模型", description = "将模型状态从 PUBLISHED 推进到 OFFLINE")
+    @Parameter(name = "id", description = "模型 ID", required = true)
     @PostMapping("/{id}/offline")
     public Result<Void> offlineModel(@PathVariable Long id) {
         modelEngineService.offlineModel(id);
         return Result.success();
     }
 
+    @Operation(summary = "软删除模型", description = "逻辑删除模型（设置 deleted=1），不删除物理表")
+    @Parameter(name = "id", description = "模型 ID", required = true)
     @DeleteMapping("/{id}")
     public Result<Void> softDeleteModel(@PathVariable Long id) {
         modelEngineService.softDeleteModel(id);
         return Result.success();
     }
 
+    @Operation(summary = "硬删除模型", description = "彻底删除模型元数据并 DROP 物理表（仅 OFFLINE 状态可操作）")
+    @Parameter(name = "id", description = "模型 ID", required = true)
     @DeleteMapping("/{id}/hard")
     public Result<Void> hardDeleteModel(@PathVariable Long id) {
         modelEngineService.hardDeleteModel(id);
