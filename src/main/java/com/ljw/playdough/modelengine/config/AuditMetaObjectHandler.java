@@ -26,6 +26,9 @@ public class AuditMetaObjectHandler implements MetaObjectHandler {
 
         this.strictInsertFill(metaObject, "updateBy",
                 Long.class, SYSTEM_USER_ID);
+
+        this.strictInsertFill(metaObject, "deleted",
+                Integer.class, 0);
     }
 
     @Override

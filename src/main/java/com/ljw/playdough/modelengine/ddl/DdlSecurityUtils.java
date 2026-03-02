@@ -25,14 +25,20 @@ public class DdlSecurityUtils {
                     throw new BusinessException(400, "非法字段长度: " + length);
                 }
                 return "VARCHAR(" + length + ")";
-            case "INT":
+            case "TEXT":
+                return "TEXT";
+            case "INTEGER":
                 return "INT";
+            case "LONG":
+                return "BIGINT";
             case "DECIMAL":
                 return "DECIMAL(10,2)";
-            case "DATE":
-                return "DATE";
             case "BOOLEAN":
                 return "TINYINT(1)";
+            case "DATE":
+                return "DATE";
+            case "DATETIME":
+                return "DATETIME";
             default:
                 throw new BusinessException(400, "不支持的字段类型: " + fieldType);
         }
